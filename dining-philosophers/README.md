@@ -15,28 +15,27 @@ Program implementuje klasyczny problem ucztujących się filozofów, gdzie każd
 - Kompilator C++ obsługujący wątki (np. GCC, Clang, MSVC)
 
 1. **Kopiowanie repozytorium:**
-  ```bash
-  git clone https://github.com/michalherbut2/so2p.git
-  cd so2p/dining-philosophers
-  ```
+```bash
+git clone https://github.com/michalherbut2/so2p.git
+cd so2p/dining-philosophers
+```
 
 2. **Kompilacja programu:**
-   Aby skompilować program, wystarczy użyć `Makefile`. Użyj poniższej komendy, aby skompilować program:
-   ```bash
-   make```
+Aby skompilować program, wystarczy użyć `Makefile`. Użyj poniższej komendy, aby skompilować program:
+```bash
+make
+```
 
-2. **Uruchomienie programu: Aby uruchomić program z domyślną liczbą filozofów (5), użyj:**
-
+3. **Uruchomienie programu: Aby uruchomić program z domyślną liczbą filozofów (5), użyj:**
 ```bash
 make run
 ```
-2. **Uruchomienie programu z określoną liczbą filozofów (np. 7): Aby uruchomić program z określoną liczbą filozofów, podaj liczbę filozofów w argumencie:**
 
+4. **Uruchomienie programu z określoną liczbą filozofów (np. 7): Aby uruchomić program z określoną liczbą filozofów, podaj liczbę filozofów w argumencie:**
 ```bash
 make run_with_args ARGS=7
 ```
-2. **Czyszczenie plików: Aby usunąć pliki wynikowe (np. plik wykonywalny), użyj komendy:**
-
+5. **Czyszczenie plików: Aby usunąć pliki wynikowe (np. plik wykonywalny), użyj komendy:**
 ```bash
 make clean
 ```
