@@ -6,7 +6,7 @@ Problem ucztujących się filozofów jest klasycznym problemem synchronizacji i 
 
 ## Wątek i synchronizacja
 
-Program implementuje klasyczny problem ucztujących się filozofów, gdzie każdy filozof jest reprezentowany przez oddzielny wątek. Filozofowie używają zamków (locks) do synchronizacji dostępu do widelców i uniknięcia zakleszczenia. Program wykorzystuje własną implementację zamka (`MyLock`), który jest używany do blokowania i odblokowywania widelców oraz do zapewnienia bezpieczeństwa dostępu do wspólnych zasobów.
+Program implementuje klasyczny problem ucztujących się filozofów, gdzie każdy filozof jest reprezentowany przez oddzielny wątek. Filozofowie używają mutexów do synchronizacji dostępu do widelców i uniknięcia zakleszczenia. Program wykorzystuje (`std::mutex`), który jest używany do blokowania i odblokowywania widelców oraz do zapewnienia bezpieczeństwa dostępu do wspólnych zasobów.
 
 ## Instrukcje uruchomienia
 
@@ -44,14 +44,14 @@ make clean
 
 Program składa się z następujących wątków:
 
-- **Filozofowie (Philosopher):** Każdy filozof jest reprezentowany przez oddzielny wątek. Filozofowie naprzemiennie myślą i jedzą. Aby zjeść, filozofowie muszą podnieść dwa widelce — jeden z lewej i jeden z prawej strony. Wątek filozofa wykonuje metodę `run()`, która najpierw próbuje podnieść dwa widelce (przez zamek), a potem jeść, przełączając się między myśleniem i jedzeniem. 
+- **Filozofowie (Philosopher):** Każdy filozof jest reprezentowany przez oddzielny wątek. Filozofowie naprzemiennie myślą i jedzą. Aby zjeść, filozofowie muszą podnieść dwa widelce — jeden z lewej i jeden z prawej strony. Wątek filozofa wykonuje metodę `run()`, która najpierw próbuje podnieść dwa widelce, a potem jeść, przełączając się między myśleniem i jedzeniem. 
 
 ## Sekcje krytyczne i ich rozwiązanie
 
 Sekcje krytyczne to obszary, w których filozofowie próbują uzyskać dostęp do wspólnych zasobów — w tym przypadku do widelców. W celu zapewnienia poprawnej synchronizacji oraz uniknięcia zakleszczenia (deadlock), zastosowane zostały następujące rozwiązania:
 
-- **Zamek na widelcu:** Każdy widelec jest reprezentowany przez obiekt klasy `MyLock`, który implementuje mechanizm blokady. Dzięki temu tylko jeden filozof może podnieść dany widelec w tym samym czasie. Działanie tego zamka bazuje na algorytmie blokującym z próbnym podejściem (busy-waiting), który w pętli sprawdza, czy widelec jest dostępny, a następnie blokuje dostęp do niego, aż zostanie zwolniony. Dodatkowo, zastosowano opóźnienie (`std::this_thread::sleep_for`), aby zminimalizować obciążenie procesora, kiedy filozofowie czekają na dostęp do widelca.
+- **Mutex na widelcu:** Każdy widelec jest reprezentowany przez `std::mutex`, który zapewnia blokowanie w momencie, gdy widelec jest już zajęty, a wątek czeka, aż będzie dostępny. Dzięki temu tylko jeden filozof może podnieść dany widelec w tym samym czasie. Dodatkowo, zastosowano opóźnienie (`std::this_thread::sleep_for`), aby zminimalizować obciążenie procesora, kiedy filozofowie czekają na dostęp do widelca.
 
 - **Hierarchia widelców:** Aby uniknąć zakleszczenia, filozofowie zawsze najpierw podnoszą widelec o niższym id, a potem ten o wyższym. Po zjedzeniu, zwracają je w odwrotnej kolejności: najpierw oddają widelec o wyższym id, a potem o niższym. W przypadku, gdy czterech filozofów jednocześnie podniesie widelce o niższym id, na stole pozostanie tylko jeden widelec — ten o najwyższym id. Piąty filozof nie będzie mógł podnieść żadnego widelca, ponieważ tylko jeden filozof ma dostęp do tego widelca. Kiedy ten filozof skończy jeść, odda widelce w odwrotnej kolejności, umożliwiając pozostałym filozofom zabranie ich i kontynuowanie jedzenia..
 
-- **Zamek globalny:** Aby zapewnić, że komunikaty wypisywane przez filozofów do konsoli są bezpieczne, używamy globalnego zamka (`global_lock`). Synchronizuje on dostęp do konsoli, dzięki czemu zapobiega sytuacjom, w których różne wątki próbują jednocześnie wypisać swoje komunikaty, co mogłoby skutkować zniekształceniem wyników lub błędami w wyświetlaniu.
+- **Mutex globalny:** Aby zapewnić, że komunikaty wypisywane przez filozofów do konsoli są bezpieczne, używamy globalnego zamka (`global_lock`). Synchronizuje on dostęp do konsoli, dzięki czemu zapobiega sytuacjom, w których różne wątki próbują jednocześnie wypisać swoje komunikaty, co mogłoby skutkować zniekształceniem wyników lub błędami w wyświetlaniu.
