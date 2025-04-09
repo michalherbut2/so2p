@@ -1,41 +1,14 @@
 #include <iostream>
 #include <thread>
 #include <vector>
-#include <chrono>
 #include <random>
-#include <string>
-#include <cstdlib> // For std::stoi
+#include <mutex>
 
 // Default number of philosophers
 const int DEFAULT_NUM_PHILOSOPHERS = 5;
 
-// Class representing a custom lock
-class MyLock {
-private:
-    volatile bool is_locked;
-
-public:
-    MyLock() : is_locked(false) {}
-
-    void lock() {
-        while (true) {
-            // Try to acquire the lock
-            if (!is_locked) {
-                is_locked = true;
-                return;
-            }
-            // Delay to reduce processor load
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        }
-    }
-
-    void unlock() {
-        is_locked = false;
-    }
-};
-
-// Global lock for printing messages
-MyLock global_lock;
+// Global mutex for printing messages
+std::mutex global_lock;
 
 // Function for safely printing messages
 void safe_print(const std::string& message) {
@@ -48,28 +21,24 @@ void safe_print(const std::string& message) {
 class Philosopher {
 private:
     int id;
-    MyLock* leftFork;
-    MyLock* rightFork;
+    std::mutex *leftFork;
+    std::mutex *rightFork;
     int mealsEaten;
     bool running;
     std::mt19937 rng;
     std::uniform_int_distribution<int> timeDist;
 
 public:
-    Philosopher(int id, MyLock* left, MyLock* right) 
-        : id(id), leftFork(left), rightFork(right), 
+    Philosopher(int id, std::mutex *left, std::mutex *right)
+        : id(id), leftFork(left), rightFork(right),
           mealsEaten(0), running(true),
           rng(id * 1000 + 42), // Unique seed 
           timeDist(1, 4) {}
 
     void run() {
         while (running) {
-            // think();
 
-            // Acquire forks according to hierarchy (lower id first)
-            // MyLock* firstFork;
-            // MyLock* secondFork;
-
+            // For the last philosopher, reverse the order to avoid deadlock
             if (id == DEFAULT_NUM_PHILOSOPHERS - 1) {
               std::swap(leftFork, rightFork);
             }
@@ -89,6 +58,7 @@ public:
 
             leftFork->unlock();
             // safe_print("[Philosopher " + std::to_string(id) + "] put down first fork");
+
             think();
         }
     }
@@ -104,7 +74,7 @@ public:
 private:
     void think() {
         safe_print("[Philosopher " + std::to_string(id) + "] is thinking...");
-        
+
         // Release the lock while thinking
         std::this_thread::sleep_for(std::chrono::seconds(timeDist(rng)) * 2);
     }
@@ -134,13 +104,13 @@ int main(int argc, char* argv[]) {
     safe_print("Solution method: resource hierarchy");
 
     // Initialize locks for forks
-    std::vector<MyLock> forks(numPhilosophers);
+    std::vector<std::mutex> forks(numPhilosophers);
 
     // Initialize philosophers
     std::vector<Philosopher> philosophers;
     for (int i = 0; i < numPhilosophers; i++) {
-        MyLock* leftFork = &forks[i];
-        MyLock* rightFork = &forks[(i + 1) % numPhilosophers];
+        std::mutex* leftFork = &forks[i];
+        std::mutex* rightFork = &forks[(i + 1) % numPhilosophers];
         philosophers.emplace_back(i, leftFork, rightFork);
     }
 
